@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {SafeAreaView, Text, View, Button, ScrollView, Platform, Modal, TextInput, Pressable, Alert} from 'react-native';
-import MapView, { Marker, Region, MapPressEvent } from 'react-native-maps';
+import MapView, {Marker, Region, LongPressEvent, Callout} from 'react-native-maps';
 import { supabase } from '@/src/libs/supabase';
 
 type Spot = {
@@ -106,7 +106,7 @@ export default function Index() {
         );
     }
 
-    function onLongPress(e: MapPressEvent) {
+    function onLongPress(e: LongPressEvent) {
         const { latitude, longitude } = e.nativeEvent.coordinate;
 
         setPendingCoord({ lat: latitude, lng: longitude });
@@ -133,14 +133,14 @@ export default function Index() {
 
                 <ScrollView>
                     {spots.map((s) => (
-                        <Marker
-                            key={s.id}
-                            coordinate={{ latitude: s.lat, longitude: s.lng }}
-                            title={s.name}
-                            description={s.description ?? undefined}
-                            onPress={() => confirmDelete(s)}
-                            onCalloutPress={() => confirmDelete(s)}
-                        />
+                        <View key={s.id} style={{ paddingVertical: 10, borderBottomWidth: 1, borderColor: '#ddd' }}>
+                            <Text style={{ fontWeight: '600' }}>{s.name}</Text>
+                            {s.description ? <Text>{s.description}</Text> : null}
+                            <Text>{s.lat}, {s.lng}</Text>
+                            <View style={{ marginTop: 8, alignSelf: 'flex-start' }}>
+                                <Button title="Delete" onPress={() => confirmDelete(s)} />
+                            </View>
+                        </View>
                     ))}
                 </ScrollView>
             </SafeAreaView>
@@ -219,9 +219,15 @@ export default function Index() {
                     <Marker
                         key={s.id}
                         coordinate={{ latitude: s.lat, longitude: s.lng }}
-                        title={s.name ?? undefined}
-                        description={s.description ?? undefined}
-                    />
+                    >
+                        <Callout onPress={() => confirmDelete(s)}>
+                            <View style={{ maxWidth: 220 }}>
+                                <Text style={{ fontWeight: '600' }}>{s.name}</Text>
+                                {s.description ? <Text>{s.description}</Text> : null}
+                                <Text style={{ marginTop: 8, color: 'red' }}>Tap to delete</Text>
+                            </View>
+                        </Callout>
+                    </Marker>
                 ))}
             </MapView>
         </SafeAreaView>
